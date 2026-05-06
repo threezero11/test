@@ -1,0 +1,12 @@
+{
+  "name": "kim-secretary-dashboard",
+  "version": "1.0.0",
+  "description": "김비서 대시보드 - 프리미엄 UI with 글래스모피즘",
+  "scripts": {
+    "build": "echo 'Static HTML files - no build needed'",
+    "start": "echo 'Static HTML files - deploy as-is'"
+  },
+  "keywords": ["dashboard", "html", "css", "javascript"],
+  "author": "Claude",
+  "license": "MIT"
+}
