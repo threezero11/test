@@ -1,5 +1,10 @@
 {
   "buildCommand": "",
   "outputDirectory": ".",
-  "framework": "html"
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/$1"
+    }
+  ]
 }
