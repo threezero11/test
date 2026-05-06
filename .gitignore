@@ -10,6 +10,7 @@ __pycache__/
 *.pyc
 
 # 빌드 결과
+dist/
 build/
 .next/
 out/
