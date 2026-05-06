@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>매출 분석 차트</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 28px 24px 40px;
+      color: #1e293b;
+    }
+
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.3px; }
+    .page-header p  { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+    /* ── 요약 카드 ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value { font-size: 23px; font-weight: 800; letter-spacing: -0.5px; }
+    .stat-sub   { font-size: 11px; color: #94a3b8; margin-top: 5px; }
+
+    /* ── 차트 카드 ── */
+    .chart-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 24px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+
+    .chart-card h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .chart-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .chart-wrap { width: 100%; overflow: hidden; }
+
+    /* 월 구분 범례 */
+    .legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+      justify-content: flex-end;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* ── 툴팁 ── */
+    #tooltip {
+      position: fixed;
+      background: #0f172a;
+      color: #f1f5f9;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      z-index: 200;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    #tooltip.show { opacity: 1; }
+    #tt-label { font-weight: 700; margin-bottom: 3px; color: #94a3b8; font-size: 11px; }
+    #tt-value { font-weight: 800; font-size: 14px; }
+
+    /* ── 네비게이션 ── */
+    nav {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #fff;
+      color: #64748b;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .nav-btn:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ 네비게이션 ══ -->
+<nav>
+  <a href="dashboard.html" class="nav-btn">📊 대시보드</a>
+  <a href="chart.html" class="nav-btn active">📈 매출 현황</a>
+  <a href="diagram.html" class="nav-btn">🔄 업무 프로세스</a>
+  <a href="report.html" class="nav-btn">📋 사이트 분석</a>
+  <a href="meeting-result.html" class="nav-btn">📝 회의록</a>
+</nav>
+
+<div class="page-header">
+  <h1>📈 매출 분석 차트</h1>
+  <p>매출데이터.csv · 2026년 1월 ~ 2월 · 30건 거래</p>
+</div>
+
+<!-- 요약 통계 -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">누적 매출</div>
+    <div class="stat-value" style="color:#3b82f6;">71,006,000원</div>
+    <div class="stat-sub">1~2월 전체 합계</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">최고 일매출</div>
+    <div class="stat-value" style="color:#10b981;">10,110,000원</div>
+    <div class="stat-sub">2월 1일 · 3개 제품</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">베스트 제품</div>
+    <div class="stat-value" style="font-size:19px; color:#6366f1;">무선 이어폰</div>
+    <div class="stat-sub">누적 28,836,000원 (40.6%)</div>
+  </div>
+</div>
+
+<!-- 선 그래프 -->
+<div class="chart-card">
+  <h2>📅 일별 매출 추이</h2>
+  <p class="chart-desc">날짜별 총 매출 합계 · 파란색=1월, 초록색=2월</p>
+  <div class="chart-wrap" id="line-wrap"></div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#3b82f6;"></div>1월
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#10b981;"></div>2월
+    </div>
+  </div>
+</div>
+
+<!-- 막대 그래프 -->
+<div class="chart-card">
+  <h2>🏆 제품별 누적 매출 비교</h2>
+  <p class="chart-desc">1~2월 전체 기간 제품별 합산 매출 (내림차순)</p>
+  <div class="chart-wrap" id="bar-wrap"></div>
+</div>
+
+<!-- 툴팁 -->
+<div id="tooltip">
+  <div id="tt-label"></div>
+  <div id="tt-value"></div>
+</div>
+
+<script>
+/* ── 유틸 ── */
+const fmt  = n => n.toLocaleString('ko-KR');
+const tip  = document.getElementById('tooltip');
+const ttL  = document.getElementById('tt-label');
+const ttV  = document.getElementById('tt-value');
+
+function showTip(label, value, e) {
+  ttL.textContent = label;
+  ttV.textContent = fmt(value) + '원';
+  tip.classList.add('show');
+  moveTip(e);
+}
+function moveTip(e) {
+  const x = Math.min(e.clientX + 16, window.innerWidth - 180);
+  const y = e.clientY - 56;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+function hideTip() { tip.classList.remove('show'); }
+
+function ns(tag, attrs = {}) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function svgText(parent, str, attrs) {
+  const el = ns('text', attrs);
+  el.textContent = str;
+  parent.appendChild(el);
+  return el;
+}
+
+/* ══════════════════════════════════════
+   데이터 (매출데이터.csv 집계)
+══════════════════════════════════════ */
+
+// 일별 매출 합계
+const lineData = [
+  { label:'1/5',  month:1, value:7075000  },
+  { label:'1/8',  month:1, value:8413000  },
+  { label:'1/12', month:1, value:4135000  },
+  { label:'1/15', month:1, value:8122000  },
+  { label:'1/19', month:1, value:5060000  },
+  { label:'1/22', month:1, value:9029000  },
+  { label:'1/26', month:1, value:4665000  },
+  { label:'2/1',  month:2, value:10110000 },
+  { label:'2/5',  month:2, value:6195000  },
+  { label:'2/10', month:2, value:8202000  },
+];
+
+// 제품별 누적 매출
+const barData = [
+  { label:'무선 이어폰',    value:28836000, color:'#3b82f6' },
+  { label:'텀블러',         value:11525000, color:'#10b981' },
+  { label:'블루투스 스피커',value: 9600000, color:'#06b6d4' },
+  { label:'보조배터리',     value: 9030000, color:'#6366f1' },
+  { label:'에코백',         value: 6165000, color:'#14b8a6' },
+  { label:'무선 충전기',    value: 5850000, color:'#34d399' },
+];
+
+/* ══════════════════════════════════════
+   선 그래프
+══════════════════════════════════════ */
+function drawLine() {
+  const wrap = document.getElementById('line-wrap');
+  const W    = wrap.clientWidth || 700;
+  const H    = 300;
+  const PAD  = { top:24, right:24, bottom:50, left:80 };
+  const CW   = W - PAD.left - PAD.right;
+  const CH   = H - PAD.top  - PAD.bottom;
+
+  const MAX_V = 12000000;
+
+  const xS = i => PAD.left + (i / (lineData.length - 1)) * CW;
+  const yS = v => PAD.top  + CH - (v / MAX_V) * CH;
+
+  const svg = ns('svg', { width:W, height:H, style:'display:block' });
+
+  /* defs: 그라디언트 (jan/feb) */
+  const defs = ns('defs');
+
+  const mkGrad = (id, color) => {
+    const g = ns('linearGradient', { id, x1:'0', y1:'0', x2:'0', y2:'1' });
+    g.appendChild(ns('stop', { offset:'0%',   'stop-color':color, 'stop-opacity':'0.28' }));
+    g.appendChild(ns('stop', { offset:'100%', 'stop-color':color, 'stop-opacity':'0.02' }));
+    return g;
+  };
+  defs.appendChild(mkGrad('gradJan', '#3b82f6'));
+  defs.appendChild(mkGrad('gradFeb', '#10b981'));
+  svg.appendChild(defs);
+
+  /* 그리드 */
+  [0, 2000000, 4000000, 6000000, 8000000, 10000000, 12000000].forEach(v => {
+    const y = yS(v);
+    svg.appendChild(ns('line', {
+      x1: PAD.left, y1: y, x2: PAD.left + CW, y2: y,
+      stroke: v === 0 ? '#cbd5e1' : '#f1f5f9',
+      'stroke-width': v === 0 ? '1.5' : '1'
+    }));
+    svgText(svg, (v / 10000).toFixed(0) + '만', {
+      x: PAD.left - 8, y: y + 4,
+      'text-anchor':'end', 'font-size':'11',
+      fill:'#94a3b8', 'font-family':'inherit'
+    });
+  });
+
+  /* 세로 구분선 (1→2월 경계: index 6.5 사이) */
+  const sepX = (xS(6) + xS(7)) / 2;
+  svg.appendChild(ns('line', {
+    x1: sepX, y1: PAD.top, x2: sepX, y2: PAD.top + CH,
+    stroke: '#e2e8f0', 'stroke-width':'1.5', 'stroke-dasharray':'4 3'
+  }));
+  svgText(svg, '1월', {
+    x: (PAD.left + sepX) / 2, y: PAD.top - 6,
+    'text-anchor':'middle', 'font-size':'11', 'font-weight':'600',
+    fill:'#93c5fd', 'font-family':'inherit'
+  });
+  svgText(svg, '2월', {
+    x: (sepX + PAD.left + CW) / 2, y: PAD.top - 6,
+    'text-anchor':'middle', 'font-size':'11', 'font-weight':'600',
+    fill:'#6ee7b7', 'font-family':'inherit'
+  });
+
+  /* 경로 builder (monotone cubic bezier) */
+  function buildPath(pts) {
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const p0 = pts[i-1], p1 = pts[i];
+      const cpx = (p0.x + p1.x) / 2;
+      d += ` C ${cpx} ${p0.y} ${cpx} ${p1.y} ${p1.x} ${p1.y}`;
+    }
+    return d;
+  }
+
+  const pts    = lineData.map((d, i) => ({ x: xS(i), y: yS(d.value) }));
+  const janPts = pts.filter((_, i) => lineData[i].month === 1);
+  const febPts = pts.filter((_, i) => lineData[i].month === 2);
+
+  /* Area (Jan) */
+  const janLine  = buildPath(janPts);
+  const janArea  = janLine + ` L ${janPts.at(-1).x} ${PAD.top+CH} L ${janPts[0].x} ${PAD.top+CH} Z`;
+  svg.appendChild(ns('path', { d: janArea, fill:'url(#gradJan)' }));
+
+  /* Area (Feb) */
+  const febLine  = buildPath(febPts);
+  const febArea  = febLine + ` L ${febPts.at(-1).x} ${PAD.top+CH} L ${febPts[0].x} ${PAD.top+CH} Z`;
+  svg.appendChild(ns('path', { d: febArea, fill:'url(#gradFeb)' }));
+
+  /* Line (Jan) */
+  const lineJan = ns('path', {
+    d: janLine, stroke:'#3b82f6', 'stroke-width':'2.5',
+    fill:'none', 'stroke-linecap':'round', 'stroke-linejoin':'round'
+  });
+  svg.appendChild(lineJan);
+
+  /* Line (Feb) */
+  const lineFeb = ns('path', {
+    d: febLine, stroke:'#10b981', 'stroke-width':'2.5',
+    fill:'none', 'stroke-linecap':'round', 'stroke-linejoin':'round'
+  });
+  svg.appendChild(lineFeb);
+
+  /* SVG를 DOM에 삽입 후 애니메이션 */
+  wrap.appendChild(svg);
+
+  [lineJan, lineFeb].forEach(el => {
+    const len = el.getTotalLength();
+    el.setAttribute('stroke-dasharray', len);
+    el.setAttribute('stroke-dashoffset', len);
+    el.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(0.4,0,0.2,1)';
+  });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    lineJan.setAttribute('stroke-dashoffset', '0');
+    lineFeb.setAttribute('stroke-dashoffset', '0');
+  }));
+
+  /* 데이터 포인트 + X 레이블 + 툴팁 */
+  lineData.forEach((d, i) => {
+    const cx   = xS(i);
+    const cy   = yS(d.value);
+    const isFeb = d.month === 2;
+    const color = isFeb ? '#10b981' : '#3b82f6';
+
+    // X label
+    svgText(svg, d.label, {
+      x: cx, y: H - 12,
+      'text-anchor':'middle', 'font-size':'11',
+      fill: isFeb ? '#10b981' : '#64748b',
+      'font-weight': isFeb ? '600' : '400',
+      'font-family':'inherit'
+    });
+
+    // Outer glow circle
+    svg.appendChild(ns('circle', { cx, cy, r:'8', fill: color, opacity:'0.12' }));
+
+    // Inner dot
+    svg.appendChild(ns('circle', {
+      cx, cy, r:'4.5',
+      fill:'#fff', stroke:color, 'stroke-width':'2.5'
+    }));
+
+    // 최고값 라벨
+    if (d.value === 10110000) {
+      svgText(svg, '▲ 최고', {
+        x: cx, y: cy - 16,
+        'text-anchor':'middle', 'font-size':'10', 'font-weight':'700',
+        fill:'#10b981', 'font-family':'inherit'
+      });
+    }
+
+    // Hit area
+    const hit = ns('circle', { cx, cy, r:'16', fill:'transparent', style:'cursor:pointer' });
+    hit.addEventListener('mouseover', e => showTip(d.label + '일 매출', d.value, e));
+    hit.addEventListener('mousemove', moveTip);
+    hit.addEventListener('mouseout',  hideTip);
+    svg.appendChild(hit);
+  });
+}
+
+/* ══════════════════════════════════════
+   막대 그래프 (가로)
+══════════════════════════════════════ */
+function drawBar() {
+  const wrap  = document.getElementById('bar-wrap');
+  const W     = wrap.clientWidth || 700;
+  const barH  = 38;
+  const gap   = 12;
+  const PAD   = { top:8, right:16, bottom:12, left:128 };
+  const H     = PAD.top + barData.length * (barH + gap) - gap + PAD.bottom;
+  const trackW = W - PAD.left - PAD.right;
+  const MAX_V  = 31000000;
+
+  const svg = ns('svg', { width:W, height:H, style:'display:block' });
+
+  barData.forEach((d, i) => {
+    const y    = PAD.top + i * (barH + gap);
+    const barW = Math.round((d.value / MAX_V) * trackW);
+    const pct  = ((d.value / 71006000) * 100).toFixed(1);
+
+    // 제품명 레이블
+    svgText(svg, d.label, {
+      x: PAD.left - 10, y: y + barH / 2 + 5,
+      'text-anchor':'end', 'font-size':'13', 'font-weight':'500',
+      fill:'#374151', 'font-family':'inherit'
+    });
+
+    // 트랙 (배경)
+    svg.appendChild(ns('rect', {
+      x: PAD.left, y, width: trackW, height: barH, rx:'9', fill:'#f1f5f9'
+    }));
+
+    // 막대 (초기 width:0, CSS transition으로 애니메이션)
+    const bar = ns('rect', {
+      x: PAD.left, y, width:'0', height: barH, rx:'9', fill: d.color
+    });
+    bar.style.transition = `width 0.85s cubic-bezier(0.4,0,0.2,1) ${i * 0.09}s`;
+    svg.appendChild(bar);
+
+    // 비율 텍스트 (막대 안, 충분히 넓으면 표시)
+    const pctLabel = svgText(svg, pct + '%', {
+      x: PAD.left + barW - 10, y: y + barH / 2 + 5,
+      'text-anchor':'end', 'font-size':'11', 'font-weight':'700',
+      fill:'rgba(255,255,255,0.85)', 'font-family':'inherit',
+      opacity:'0'
+    });
+    pctLabel.style.transition = `opacity 0.3s ease ${i * 0.09 + 0.65}s`;
+
+    // 금액 텍스트 (오른쪽)
+    const valLabel = svgText(svg, fmt(d.value) + '원', {
+      x: PAD.left + barW + 10, y: y + barH / 2 + 5,
+      'font-size':'12', 'font-weight':'600',
+      fill:'#64748b', 'font-family':'inherit',
+      opacity:'0'
+    });
+    valLabel.style.transition = `opacity 0.3s ease ${i * 0.09 + 0.65}s`;
+
+    // 히트 영역
+    const hit = ns('rect', {
+      x: PAD.left, y, width: trackW, height: barH,
+      rx:'9', fill:'transparent', style:'cursor:pointer'
+    });
+    hit.addEventListener('mouseover', e => showTip(d.label + ' 누적 매출', d.value, e));
+    hit.addEventListener('mousemove', moveTip);
+    hit.addEventListener('mouseout',  hideTip);
+    svg.appendChild(hit);
+
+    // DOM 삽입 후 애니메이션 트리거
+    wrap.appendChild(svg);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bar.setAttribute('width', barW);
+      if (barW > 50) { pctLabel.setAttribute('opacity', '1'); }
+      valLabel.setAttribute('opacity', '1');
+    }));
+  });
+}
+
+drawLine();
+drawBar();
+</script>
+</body>
+</html>
