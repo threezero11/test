@@ -11,7 +11,11 @@
       "Bash(git commit -m ' *)",
       "Bash(GIT_TRACE=1 git push -u origin main)",
       "Bash(gh --version)",
-      "Bash(ssh -T git@github.com)"
+      "Bash(ssh -T git@github.com)",
+      "Bash(grep -E \"\\\\.\\(html|json|svg\\)$\")",
+      "Bash(mkdir -p public)",
+      "Bash(cp *.html public/)",
+      "Bash(cp *.svg public/)"
     ]
   }
 }
