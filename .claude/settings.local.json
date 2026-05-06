@@ -26,7 +26,16 @@
       "Bash(ssh-keyscan -H github.com)",
       "Bash(mkdir -p ~/.ssh)",
       "Bash(npm run *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "mcp__Claude_in_Chrome__switch_browser",
+      "WebSearch",
+      "WebFetch(domain:test-threezero11.vercel.app)",
+      "WebFetch(domain:test.vercel.app)",
+      "WebFetch(domain:kim-secretary-dashboard.vercel.app)",
+      "WebFetch(domain:kim-secretary-dashboard-threezero11.vercel.app)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:test-q41a11r4u-threezero11s-projects.vercel.app)",
+      "WebFetch(domain:test-indol-zeta-93.vercel.app)"
     ]
   }
 }
