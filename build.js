@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-// dist 디렉토리 생성
-if (!fs.existsSync('dist')) {
-  fs.mkdirSync('dist', { recursive: true });
+// public 디렉토리 생성
+if (!fs.existsSync('public')) {
+  fs.mkdirSync('public', { recursive: true });
 }
 
 // 복사할 파일 목록
@@ -13,15 +13,13 @@ const files = [
   'diagram.html',
   'diagram.svg',
   'meeting-result.html',
-  'report.html',
-  'package.json',
-  'vercel.json'
+  'report.html'
 ];
 
 // 파일 복사
 files.forEach(file => {
   const src = path.join(__dirname, file);
-  const dest = path.join(__dirname, 'dist', file);
+  const dest = path.join(__dirname, 'public', file);
 
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, dest);
