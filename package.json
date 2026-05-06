@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "김비서 대시보드 - 프리미엄 UI with 글래스모피즘",
   "scripts": {
-    "build": "mkdir -p /vercel/output && cp *.html *.svg *.json /vercel/output/ 2>/dev/null; exit 0"
+    "build": "mkdir -p dist && cp *.html *.svg *.json dist/ 2>/dev/null; exit 0"
   },
   "keywords": ["dashboard", "html", "css", "javascript"],
   "author": "Claude",
