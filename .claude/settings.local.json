@@ -19,7 +19,14 @@
       "Bash(grep -E \"\\\\.\\(html|svg\\)$\")",
       "Bash(grep -E \"\\\\.\\(html|svg|json\\)$\")",
       "Bash(mkdir -p test-dist)",
-      "Bash(cp *.html *.svg *.json test-dist/)"
+      "Bash(cp *.html *.svg *.json test-dist/)",
+      "Bash(grep -E '\\\\.\\(html|json|svg|js\\)$')",
+      "Bash(git fetch *)",
+      "Bash(ls -la ~/.ssh/ 2>/dev/null | head -10 || echo \"No SSH directory found\")",
+      "Bash(ssh-keyscan -H github.com)",
+      "Bash(mkdir -p ~/.ssh)",
+      "Bash(npm run *)",
+      "Bash(git commit *)"
     ]
   }
 }

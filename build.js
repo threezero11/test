@@ -12,6 +12,7 @@ const files = [
   'chart.html',
   'diagram.html',
   'diagram.svg',
+  'favicon.svg',
   'meeting-result.html',
   'report.html'
 ];
